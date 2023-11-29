@@ -2,9 +2,9 @@ const userModel = require("../models/user");
 
 function createUser(req, res)
 {
-  const {name, description, avatar} = req.body;
+  const userData = req.body;
 
-  return userModel.create(name, description, avatar)
+  return userModel.create(userData)
     .then((user) =>
     {
       return res.status(201).send(user);
