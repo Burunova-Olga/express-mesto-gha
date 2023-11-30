@@ -57,10 +57,15 @@ function updateUser(req, res)
 {
   const {name, about} = req.body;
 
-  if (name.length < 2 || name.length >30 || about.length < 2 || about.length >30)
-    return res.status(400).send({ message: "Неверные входные данные: " +  err.message  });
+  if (name)
+    if (name.length < 2 || name.length >30 )
+      return res.status(400).send({ message: "Неверные входные данные"});
 
-  return userModel.findByIdAndUpdate(req.user.id, {name, about}, { new: 'true' })
+  if (about)
+    if (about.length < 2 || about.length >30)
+      return res.status(400).send({ message: "Неверные входные данные"});
+
+  return userModel.findByIdAndUpdate(req.user.id, {'$set': {name: name, about: about}}, { new: 'true' })
     .then((user) =>
     {
       if (!user)
