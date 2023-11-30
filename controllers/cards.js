@@ -34,14 +34,19 @@ function readAllCards(req, res)
 function deleteCard(req, res)
 {
   return cardModel.deleteOne({ "_id" : req.params.cardId})
-    .then(() =>
+    .then((result) =>
     {
-      return res.status(200).send({ message: "Карточка успешно удалена" });
+      const {acknowledged, deletedCount} = result;
+
+      if (deletedCount === 0)
+        return res.status(404).send({ message: "Карточка не найдена"});
+
+      return res.status(200).send({ message: "Карточка успешно удалена"});
     })
     .catch((err) =>
     {
       if (err.name === 'CastError')
-        return res.status(404).send({ message: "Пользователь не найден: " +  err.message });
+        return res.status(400).send({ message: "Неверные входные данные: " +  err.message });
 
       return res.status(500).send({ message: "Неизвестная ошибка: " + err.message });
     });
@@ -54,14 +59,20 @@ function setLike(req, res)
     { new: true })
     .then((card) =>
     {
+      if (!card)
+        return res.status(404).send({message: "Карточка не найдена: " +  err.message});
+
       return res.status(201).send(card);
     })
     .catch((err) =>
     {
+      if (err.name === 'ReferenceError')
+        return res.status(404).send({message: "Карточка не найдена: " +  err.message});
+
       if (err.name === 'CastError')
         return res.status(400).send({message: "Неверные входные данные: " +  err.message});
 
-      return res.status(500).send({ message: "Неизвестная ошибка: " + err.message });
+      return res.status(500).send({ message: "Неизвестная ошибка: " + err.name });
     });
 }
 
@@ -70,19 +81,22 @@ function deleteLike(req, res)
   return cardModel.findByIdAndUpdate(req.params.cardId,
     { $pull: { likes: req.user.id } },
     { new: true })
-    .then(() =>
+    .then((card) =>
     {
-      return res.status(200).send({ message: "Лайк удалён" });
+      if (!card)
+        return res.status(404).send({message: "Карточка не найдена: " +  err.message});
+
+      return res.status(200).send({ message: "Лайк удалён"});
     })
     .catch((err) =>
     {
-      if (err.name === 'ValidationError')
+      if (err.name === 'CastError')
         return res.status(400).send({message: "Неверные входные данные: " +  err.message});
 
-      if (err.name === 'CastError')
-        return res.status(404).send({ message: "Пользователь не найден: " +  err.message });
+      if (err.name === 'ReferenceError')
+        return res.status(404).send({message: "Карточка не найдена: " +  err.message});
 
-      return res.status(500).send({ message: "Неизвестная ошибка: " + err.message });
+      return res.status(500).send({ message: "Неизвестная ошибка: " + err.name });
     });
 }
 
