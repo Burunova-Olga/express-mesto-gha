@@ -12,9 +12,9 @@ function createUser(req, res)
     .catch((err) =>
     {
       if (err.name === 'ValidationError')
-        return res.status(400).send({message: "Неверные входные данные:" +  err.message});
+        return res.status(400).send({message: "Неверные входные данные: " +  err.message});
 
-      return res.status(500).send({ message: "Неизвестная ошибка:" + err.message });
+      return res.status(500).send({ message: "Неизвестная ошибка: " + err.message });
     });
 }
 
@@ -27,7 +27,7 @@ function readAllUsers(req, res)
     })
     .catch((err) =>
     {
-      return res.status(500).send({ message: "Неизвестная ошибка:" + err.message });
+      return res.status(500).send({ message: "Неизвестная ошибка: " + err.message });
     });
 }
 
@@ -37,44 +37,39 @@ function readUser(req, res)
     .then((user) =>
     {
       if (!user)
-        return res.status(404).send({ message: "Пользователь не найден:" +  err.message });
+        return res.status(404).send({ message: "Пользователь не найден: " +  err.message });
 
       return res.status(200).send({message: user});
     })
     .catch((err) =>
     {
       if (err.name === 'CastError')
-        return res.status(400).send({message: "Неверные входные данные:" +  err.message});
+        return res.status(400).send({message: "Неверные входные данные: " +  err.message});
 
-      return res.status(500).send({ message: "Неизвестная ошибка:" + err.name });
+      if (err.name === 'ReferenceError')
+      return res.status(404).send({ message: "Пользователь не найден: " +  err.message });
+
+      return res.status(500).send({ message: "Неизвестная ошибка: " + err.message });
     });
 }
 
 function updateUser(req, res)
 {
-  const { userId } = req.user._id;
-  let updates = {}
-
-  if (req.body.name)
-    updates["name"] = req.body.name
-
-  if (req.body.description)
-    updates["description"] = req.body.description
-
-  User.findByIdAndUpdate(userId, updates, { new: true })
+  const {name, about} = req.body;
+  return userModel.findByIdAndUpdate(req.user.id, {name, about}, { new: 'true' })
     .then((user) =>
     {
       if (!user)
-        return res.status(404).send({ message: "Пользователь не найден:" +  err.message });
+        return res.status(404).send({ message: "Пользователь не найден: " +  err.message });
 
       return res.status(200).send(user);
     })
     .catch((err) =>
     {
       if (err.name === 'CastError')
-        return res.status(400).send({ message: "Неверные входные данные:" +  err.message  });
+        return res.status(400).send({ message: "Неверные входные данные: " +  err.message  });
 
-      return res.status(500).send({ message: "Неизвестная ошибка:" + err.message });
+      return res.status(500).send({ message: "Неизвестная ошибка: "});
     });
 }
 
@@ -82,22 +77,22 @@ function updateAvatar(req, res)
 {
   const { userId } = req.user._id;
 
-  User.findByIdAndUpdate(userId,
+  return userModel.findByIdAndUpdate(userId,
     { avatar: req.body.avatar },
     { new: true})
     .then((user) =>
     {
       if (!user)
-        return res.status(404).send({ message: "Пользователь не найден:" +  err.message });
+        return res.status(404).send({ message: "Пользователь не найден: " +  err.message });
 
       return res.status(200).send(user);
     })
     .catch((err) =>
     {
       if (err.name === 'CastError')
-        return res.status(400).send({ message: "Неверные входные данные:" +  err.message  });
+        return res.status(400).send({ message: "Неверные входные данные: " +  err.message  });
 
-      return res.status(500).send({ message: "Неизвестная ошибка:" + err.message });
+      return res.status(500).send({ message: "Неизвестная ошибка: " + err.message });
     });
 }
 
