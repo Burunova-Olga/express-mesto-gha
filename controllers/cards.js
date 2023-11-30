@@ -33,7 +33,7 @@ function readAllCards(req, res)
 
 function deleteCard(req, res)
 {
-  return cardModel.deleteOne(req.params.cardId)
+  return cardModel.deleteOne({ "_id" : req.params.cardId})
     .then(() =>
     {
       return res.status(200).send({ message: "Карточка успешно удалена" });
@@ -50,7 +50,7 @@ function deleteCard(req, res)
 function setLike(req, res)
 {
   return cardModel.findByIdAndUpdate(req.params.cardId,
-    { $addToSet: { likes: req.user._id } },
+    { $addToSet: { likes: req.user.id } },
     { new: true })
     .then((card) =>
     {
@@ -68,7 +68,7 @@ function setLike(req, res)
 function deleteLike(req, res)
 {
   return cardModel.findByIdAndUpdate(req.params.cardId,
-    { $pull: { likes: req.user._id } },
+    { $pull: { likes: req.user.id } },
     { new: true })
     .then(() =>
     {
