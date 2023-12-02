@@ -57,15 +57,7 @@ function updateUser(req, res)
 {
   const {name, about} = req.body;
 
-  if (name)
-    if (name.length < 2 || name.length >30 )
-      return res.status(400).send({ message: "Неверные входные данные"});
-
-  if (about)
-    if (about.length < 2 || about.length >30)
-      return res.status(400).send({ message: "Неверные входные данные"});
-
-  return userModel.findByIdAndUpdate(req.user.id, {'$set': {name: name, about: about}}, { new: 'true' })
+  return userModel.findByIdAndUpdate(req.user.id, {'$set': {name: name, about: about}}, { new: true, runValidators: true })
     .then((user) =>
     {
       if (!user)
@@ -86,7 +78,7 @@ function updateAvatar(req, res)
 {
   const {avatar} = req.body;
 
-  return userModel.findByIdAndUpdate(req.user.id, { avatar }, { new: 'true'})
+  return userModel.findByIdAndUpdate(req.user.id, { avatar }, { new: true, runValidators: true})
     .then((user) =>
     {
       if (!user)

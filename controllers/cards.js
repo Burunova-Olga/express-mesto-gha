@@ -62,7 +62,7 @@ function setLike(req, res)
       if (!card)
         return res.status(404).send({message: "Карточка не найдена: " +  err.message});
 
-      return res.status(201).send(card);
+      return res.status(200).send(card);
     })
     .catch((err) =>
     {
