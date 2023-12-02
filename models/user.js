@@ -5,21 +5,21 @@ const userSchema = new mongoose.Schema(
   name:
   {
     type: String,
-    required: [true, 'Поле "name" должно быть заполнено'],
-    minlength: [2, 'Минимальная длина поля "name" - 2'],
-    maxlength: [30, 'Максимальная длина поля "name" - 30'],
+    required: [true, 'Поле должно быть заполнено'],
+    minlength: [2, 'Минимальная длина поля 2 символа'],
+    maxlength: [30, 'Максимальная длина поля 30 символов'],
   },
   about:
   {
     type: String,
-    required: [true, 'Поле "about" должно быть заполнено'],
-    minlength: [2, 'Минимальная длина поля "about" - 2'],
-    maxlength: [30, 'Максимальная длина поля "about" - 30'],
+    required: [true, 'Поле должно быть заполнено'],
+    minlength: [2, 'Минимальная длина поля 2 символа'],
+    maxlength: [30, 'Максимальная длина поля 30 символов'],
   },
   avatar:
   {
     type: String,
-    required: [true, 'Поле "avatar" должно быть заполнено'],
+    required: [true, 'Поле должно быть заполнено'],
   }
 }, { versionKey: false });
 

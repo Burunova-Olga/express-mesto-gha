@@ -67,10 +67,10 @@ function updateUser(req, res)
     })
     .catch((err) =>
     {
-      if (err.name === 'CastError')
+      if (err.name === 'ValidationError')
         return res.status(400).send({ message: "Неверные входные данные: " +  err.message  });
 
-      return res.status(500).send({ message: "Неизвестная ошибка: "});
+      return res.status(500).send({ message: "Неизвестная ошибка: " + err.name});
     });
 }
 
