@@ -9,15 +9,15 @@ const app = express();
 mongoose.connect(DB_URL)
   .then(() =>
   {
-    console.log("MongoDB connected");
+    console.log('MongoDB connected');
   });
 
 app.use((req, res, next) =>
-  {
-    req.user = { id: '656b27ccff1562b67ce42c37'};
+{
+  req.user = { id: '656b27ccff1562b67ce42c37'};
 
-    next();
-  });
+  next();
+});
 
 app.use(helmet());
 app.use(bodyParser.json());
@@ -27,7 +27,7 @@ app.use('/cards', require('./routes/cards'));
 
 app.use((req, res, next) =>
 {
-  res.status(404).send({message: "Неверный путь"});
+  res.status(404).send({message: 'Неверный путь'});
 });
 
 app.listen(PORT, () =>

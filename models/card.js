@@ -9,22 +9,22 @@ const cardSchema = new mongoose.Schema(
     minlength: [2, 'Минимальная длина поля 2 символа'],
     maxlength: [30, 'Максимальная длина поля 30 символа'],
   },
-  link :
+  link:
   {
     type: String,
-    required: [true, 'Поле "link" должно быть заполнено'],
+    required: [true, 'Поле должно быть заполнено'],
   },
-  owner :
+  owner:
   {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
   },
-  likes :
+  likes:
     [mongoose.Schema.Types.ObjectId],
-  createdAt :
+  createdAt:
   {
     type: Date,
-    default: Date.now
+    default: Date.now,
   },
 }, { versionKey: false });
 
