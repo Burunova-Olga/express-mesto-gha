@@ -1,9 +1,37 @@
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 const userModel = require('../models/user');
 
-function createUser(req, res) {
-  const userData = req.body;
+function login(req, res) {
+  const { email, password } = req.body;
 
-  return userModel.create(userData)
+  return userModel.findUserByCredentials(email, password)
+    .then(() => {
+      const token = jwt.sign(
+        { _id: req.user._id },
+        'some-secret-key',
+        { expiresIn: '7d' },
+      );
+
+      res.send({ token });
+    })
+    .then((user) => res.status(201).send(user))
+    .catch((err) => {
+      if (err.name === 'ValidationError') return res.status(400).send({ message: `Неверные входные данные: ${err.message}` });
+
+      return res.status(500).send({ message: `Неизвестная ошибка: ${err.message}` });
+    });
+}
+
+function createUser(req, res) {
+  return bcrypt.hash(req.body.password, 10)
+    .then((hash) => userModel.create({
+      name: req.body.name,
+      about: req.body.about,
+      avatar: req.body.avatar,
+      email: req.body.email,
+      password: hash,
+    }))
     .then((user) => res.status(201).send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') return res.status(400).send({ message: `Неверные входные данные: ${err.message}` });
@@ -71,6 +99,7 @@ function updateAvatar(req, res) {
 }
 
 module.exports = {
+  login,
   readAllUsers,
   createUser,
   readUser,
