@@ -7,18 +7,20 @@ const NotFoundError = require('../errors/not-found-error');
 const DataError = require('../errors/data-error');
 const UnknownError = require('../errors/unknown-error');
 const DuplicateError = require('../errors/duplicate-error');
+const NoAccessError = require('../errors/no-access-error');
 
 function login(req, res, next) {
   const { email, password } = req.body;
 
   return userModel.findOne({ email }).select('+password')
     .then((user) => {
-      if (!user) next(new DataError('Неправильные почта или пароль'));
+      if (!user) next(new NoAccessError('Неправильные почта или пароль'));
+
       const token = jwt.sign({ _id: user._id }, 'super-strong-secret', { expiresIn: '7d' });
 
       return bcrypt.compare(password, user.password)
         .then((matched) => {
-          if (!matched) next(new DataError('Неправильные почта или пароль'));
+          if (!matched) next(new NoAccessError('Неправильные почта или пароль'));
 
           res.status(200)
             .send({ token });
