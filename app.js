@@ -25,13 +25,14 @@ app.post('/signin', celebrate({
   }).unknown(true),
 }), login);
 
+const regex = /(http|https):\/\/(w{3}.)?a-zA-Z0-9-._~:\/\?#\[\]@!\$&'\(\)\*\+,;=/;
 app.post('/signup', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
     password: Joi.string().required().min(8),
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
-    avatar: Joi.string(),
+    avatar: Joi.string().pattern(regex),
   }).unknown(true),
 }), createUser);
 
