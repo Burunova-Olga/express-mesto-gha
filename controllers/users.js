@@ -1,40 +1,30 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const userModel = require('../models/user');
+const NotFoundError = require('../errors/not-found-error');
+const DataError = require('../errors/data-error');
+const UnknownError = require('../errors/unknown-error');
+const DuplicateError = require('../errors/duplicate-error');
 
-function findUserByCredentials(email, password) {
+function login(req, res, next) {
+  const { email, password } = req.body;
+
   return userModel.findOne({ email }).select('+password')
     .then((user) => {
-      if (!user) return Promise.reject(new Error('Неправильные почта или пароль'));
+      if (!user) next(new DataError('Неправильные почта или пароль'));
+      const token = jwt.sign({ _id: user._id }, 'super-strong-secret', { expiresIn: '7d' });
 
       return bcrypt.compare(password, user.password)
         .then((matched) => {
-          if (!matched) Promise.reject(new Error('Неправильные почта или пароль'));
+          if (!matched) next(new DataError('Неправильные почта или пароль'));
 
-          return user;
+          res.status(200)
+            .send({ token });
         });
     });
 }
 
-function login(req, res) {
-  const { email, password } = req.body;
-
-  return findUserByCredentials(email, password)
-    .then((user) => {
-      res.send({
-        token: jwt.sign(
-          { _id: user._id },
-          'super-strong-secret',
-          { expiresIn: '7d' },
-        ),
-      });
-    })
-    .catch((err) => {
-      res.status(401).send({ message: err.message });
-    });
-}
-
-function createUser(req, res) {
+function createUser(req, res, next) {
   return bcrypt.hash(req.body.password, 10)
     .then((hash) => userModel.create({
       name: req.body.name,
@@ -51,36 +41,37 @@ function createUser(req, res) {
       _id: user._id,
     }))
     .catch((err) => {
-      if (err.code === 11000) return res.status(409).send({ message: `Данный email уже зарегестрирован: ${err.message}` });
-      if (err.name === 'ValidationError') return res.status(400).send({ message: `Неверные входные данные: ${err.message}` });
+      if (err.code === 11000) next(new DuplicateError(`Данный email уже зарегестрирован: ${err.message}`));
 
-      return res.status(500).send({ message: `Неизвестная ошибка: ${err.message}` });
+      if (err.name === 'ValidationError') next(new DataError(`Неверные входные данные: : ${err.message}`));
+
+      next(new UnknownError(`Неизвестная ошибка: : ${err.message}`));
     });
 }
 
-function readAllUsers(req, res) {
+function readAllUsers(req, res, next) {
   return userModel.find()
     .then((users) => res.status(200).send(users))
-    .catch((err) => res.status(500).send({ message: `Неизвестная ошибка: ${err.message}` }));
+    .catch((err) => next(new UnknownError(`Неизвестная ошибка: : ${err.message}`)));
 }
 
-function readUser(req, res) {
+function readUser(req, res, next) {
   return userModel.findById(req.params.userId)
     .then((user) => {
-      if (!user) return res.status(404).send({ message: 'Пользователь не найден' });
+      if (!user) next(new NotFoundError('Пользователь не найден'));
 
       return res.status(200).send({ message: user });
     })
     .catch((err) => {
-      if (err.name === 'CastError') return res.status(400).send({ message: `Неверные входные данные: ${err.message}` });
+      if (err.name === 'CastError') next(new DataError(`Неверные входные данные: : ${err.message}`));
 
-      if (err.name === 'ReferenceError') return res.status(404).send({ message: `Пользователь не найден: ${err.message}` });
+      if (err.name === 'ReferenceError') next(new NotFoundError(`Пользователь не найден: ${err.message}`));
 
-      return res.status(500).send({ message: `Неизвестная ошибка: ${err.message}` });
+      next(new UnknownError(`Неизвестная ошибка: : ${err.message}`));
     });
 }
 
-function updateUser(req, res) {
+function updateUser(req, res, next) {
   const { name, about } = req.body;
 
   return userModel.findByIdAndUpdate(
@@ -89,30 +80,30 @@ function updateUser(req, res) {
     { new: true, runValidators: true },
   )
     .then((user) => {
-      if (!user) return res.status(404).send({ message: 'Пользователь не найден' });
+      if (!user) next(new NotFoundError('Пользователь не найден'));
 
       return res.status(200).send(user);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') return res.status(400).send({ message: `Неверные входные данные: ${err.message}` });
+      if (err.name === 'ValidationError') next(new DataError(`Неверные входные данные: : ${err.message}`));
 
-      return res.status(500).send({ message: `Неизвестная ошибка: ${err.name}` });
+      next(new UnknownError(`Неизвестная ошибка: : ${err.message}`));
     });
 }
 
-function updateAvatar(req, res) {
+function updateAvatar(req, res, next) {
   const { avatar } = req.body;
 
   return userModel.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
     .then((user) => {
-      if (!user) return res.status(404).send({ message: 'Пользователь не найден' });
+      if (!user) next(new NotFoundError('Пользователь не найден'));
 
       return res.status(200).send(user);
     })
     .catch((err) => {
-      if (err.name === 'CastError') return res.status(400).send({ message: `Неверные входные данные: ${err.message}` });
+      if (err.name === 'CastError') next(new DataError(`Неверные входные данные: : ${err.message}`));
 
-      return res.status(500).send({ message: `Неизвестная ошибка: ${err.message}` });
+      next(new UnknownError(`Неизвестная ошибка: : ${err.message}`));
     });
 }
 
