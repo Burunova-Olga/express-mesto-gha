@@ -1,3 +1,4 @@
+/* eslint-disable */
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
@@ -25,7 +26,7 @@ app.post('/signin', celebrate({
   }).unknown(true),
 }), login);
 
-const regex = /(http|https):\/\/(w{3}.)?a-zA-Z0-9-._~:\/\?#\[\]@!\$&'\(\)\*\+,;=/;
+const regex = /(http|https):\/\/(w{3}.)?[a-zA-Z0-9-._~:\/\?#\[\]@!\$&'\(\)\*\+,;=/]/;
 app.post('/signup', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),

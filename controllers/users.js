@@ -2,24 +2,35 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const userModel = require('../models/user');
 
+function findUserByCredentials(email, password) {
+  return userModel.findOne({ email }).select('+password')
+    .then((user) => {
+      if (!user) return Promise.reject(new Error('Неправильные почта или пароль'));
+
+      return bcrypt.compare(password, user.password)
+        .then((matched) => {
+          if (!matched) Promise.reject(new Error('Неправильные почта или пароль'));
+
+          return user;
+        });
+    });
+}
+
 function login(req, res) {
   const { email, password } = req.body;
 
-  return userModel.findUserByCredentials(email, password)
-    .then(() => {
-      const token = jwt.sign(
-        { _id: req.user._id },
-        'some-secret-key',
-        { expiresIn: '7d' },
-      );
-
-      res.send({ token });
+  return findUserByCredentials(email, password)
+    .then((user) => {
+      res.send({
+        token: jwt.sign(
+          { _id: user._id },
+          'super-strong-secret',
+          { expiresIn: '7d' },
+        ),
+      });
     })
-    .then((user) => res.status(201).send(user))
     .catch((err) => {
-      if (err.name === 'ValidationError') return res.status(400).send({ message: `Неверные входные данные: ${err.message}` });
-
-      return res.status(500).send({ message: `Неизвестная ошибка: ${err.message}` });
+      res.status(401).send({ message: err.message });
     });
 }
 
@@ -40,6 +51,7 @@ function createUser(req, res) {
       _id: user._id,
     }))
     .catch((err) => {
+      if (err.code === 11000) return res.status(409).send({ message: `Данный email уже зарегестрирован: ${err.message}` });
       if (err.name === 'ValidationError') return res.status(400).send({ message: `Неверные входные данные: ${err.message}` });
 
       return res.status(500).send({ message: `Неизвестная ошибка: ${err.message}` });
