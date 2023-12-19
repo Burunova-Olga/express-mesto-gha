@@ -66,7 +66,7 @@ function updateUser(req, res) {
   const { name, about } = req.body;
 
   return userModel.findByIdAndUpdate(
-    req.user.id,
+    req.user._id,
     { $set: { name, about } },
     { new: true, runValidators: true },
   )
@@ -85,7 +85,7 @@ function updateUser(req, res) {
 function updateAvatar(req, res) {
   const { avatar } = req.body;
 
-  return userModel.findByIdAndUpdate(req.user.id, { avatar }, { new: true, runValidators: true })
+  return userModel.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
     .then((user) => {
       if (!user) return res.status(404).send({ message: 'Пользователь не найден' });
 
