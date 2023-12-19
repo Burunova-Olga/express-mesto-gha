@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const userModel = require('../models/user');

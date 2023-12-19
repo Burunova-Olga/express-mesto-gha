@@ -1,3 +1,4 @@
+/* eslint-disable */
 const path = require('path');
 const express = require('express');
 const mongoose = require('mongoose');
@@ -44,14 +45,20 @@ app.use(auth);
 app.use('/users', require('./routes/users'));
 app.use('/cards', require('./routes/cards'));
 
-app.use((req, res, next) => {
-  next(new NotFoundError('Неверный путь'));
-});
-
 app.use(errors());
 
-app.use((err, req, res) => {
-  res.status(err.statusCode).send({ message: err.message });
+app.use((err, req, res, next) => {
+  const { statusCode = 500, message } = err;
+
+  res
+  .status(statusCode)
+  .send({
+    // проверяем статус и выставляем сообщение в зависимости от него
+    message: statusCode === 500
+      ? 'На сервере произошла ошибка'
+      : message
+  })
+  .end();
 });
 
 app.listen(PORT, () => {

@@ -5,8 +5,6 @@ const NoAccessError = require('../errors/no-access-error');
 module.exports = (req, res, next) => {
   const { authorization } = req.headers;
 
-  next(new NoAccessError('Необходима авторизация: ' + authorization));
-/*
   if (!authorization || !authorization.startsWith('Bearer ')) {
     next(new NoAccessError('Необходима авторизация: ' + authorization));
   }
@@ -21,6 +19,5 @@ module.exports = (req, res, next) => {
   }
 
   req.user = payload;
-*/
   next();
 };
