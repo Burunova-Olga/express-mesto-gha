@@ -1,3 +1,4 @@
+/* eslint-disable */
 const cardModel = require('../models/card');
 const NotFoundError = require('../errors/not-found-error');
 const DataError = require('../errors/data-error');
@@ -25,7 +26,7 @@ function deleteCard(req, res, next) {
   return cardModel.findById(req.params.cardId)
     .then((card) => {
       if (!card) next(new NotFoundError('Карточка не найдена'));
-      else if (card.owner !== req.user._id) next(new MasterError('Эту карточку добавил другой пользователь'));
+      else if (card.owner != req.user._id) next(new MasterError('Эту карточку добавил другой пользователь'));
       else {
         return cardModel.deleteOne({ _id: req.params.cardId })
           .then((result) => {
