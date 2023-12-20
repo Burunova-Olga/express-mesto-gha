@@ -13,8 +13,8 @@ function findUserByCredentials(email, password) {
       if (!user) return Promise.reject(new NoAccessError('Неправильные почта или пароль'));
       return bcrypt.compare(password, user.password)
         .then((matched) => {
-          if (!matched) Promise.reject(new NoAccessError('Неправильные почта или пароль'));
-          else return user;
+          if (!matched) return Promise.reject(new NoAccessError('Неправильные почта или пароль'));
+          return user;
         });
     });
 }
@@ -25,7 +25,6 @@ function login(req, res, next) {
   return findUserByCredentials(email, password)
     .then((user) => {
       res
-        .status(200)
         .send({
           token: jwt.sign(
             { _id: user._id },
@@ -63,7 +62,7 @@ function createUser(req, res, next) {
 
 function readAllUsers(req, res, next) {
   return userModel.find()
-    .then((users) => res.status(200).send(users))
+    .then((users) => res.send(users))
     .catch((err) => next(new UnknownError(`Неизвестная ошибка: ${err.message}`)));
 }
 
@@ -71,7 +70,7 @@ function readUser(req, res, next) {
   return userModel.findById(req.params.userId)
     .then((user) => {
       if (!user) next(new NotFoundError('Пользователь не найден'));
-      else return res.status(200).send({ message: user });
+      else return res.send({ message: user });
     })
     .catch((err) => {
       if (err.name === 'CastError') next(new DataError(`Неверные входные данные: ${err.message}`));
@@ -91,7 +90,7 @@ function updateUser(req, res, next) {
   )
     .then((user) => {
       if (!user) next(new NotFoundError('Пользователь не найден'));
-      else return res.status(200).send(user);
+      else return res.send(user);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') next(new DataError(`Неверные входные данные: ${err.message}`));
@@ -105,7 +104,7 @@ function updateAvatar(req, res, next) {
   return userModel.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
     .then((user) => {
       if (!user) next(new NotFoundError('Пользователь не найден'));
-      else return res.status(200).send(user);
+      else return res.send(user);
     })
     .catch((err) => {
       if (err.name === 'CastError') next(new DataError(`Неверные входные данные: ${err.message}`));
