@@ -20,7 +20,6 @@ const userSchema = new mongoose.Schema({
   {
     type: String,
     required: [true, 'Поле должно быть заполнено'],
-    validate: [validator.isURL, 'Строка не ссылка'],
     default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
   },
   email:
@@ -36,6 +35,7 @@ const userSchema = new mongoose.Schema({
   {
     type: String,
     required: [true, 'Поле должно быть заполнено'],
+    minlength: [8, 'Минимальная длина поля 8 символов'],
     select: false,
   },
 }, { versionKey: false });

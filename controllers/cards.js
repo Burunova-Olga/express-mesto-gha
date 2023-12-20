@@ -17,7 +17,7 @@ function createCard(req, res, next) {
 
 function readAllCards(req, res, next) {
   return cardModel.find()
-    .then((cards) => res.send(cards))
+    .then((cards) => res.status(200).send(cards))
     .catch((err) => next(new UnknownError(`Неизвестная ошибка: : ${err.message}`)));
 }
 
@@ -25,20 +25,20 @@ function deleteCard(req, res, next) {
   return cardModel.findById(req.params.cardId)
     .then((card) => {
       if (!card) next(new NotFoundError('Карточка не найдена'));
-      else if (card.owner !== req.user._id) next(new MasterError('Эту карточку добавил другой пользователь'));
+      else if (card.owner != req.user._id) next(new MasterError('Эту карточку добавил другой пользователь'));
+      else {
+        return cardModel.deleteOne({ _id: req.params.cardId })
+          .then((result) => {
+            const { deletedCount } = result;
 
-      return cardModel.deleteOne({ _id: req.params.cardId })
-        .then((result) => {
-          const { deletedCount } = result;
-
-          if (deletedCount === 0) next(new NotFoundError('Карточка не найдена'));
-
-          return res.send({ message: 'Карточка успешно удалена' });
-        })
-        .catch((err) => {
-          if (err.name === 'CastError') next(new DataError(`Неверные входные данные: : ${err.message}`));
-          else next(new UnknownError(`Неизвестная ошибка: : ${err.message}`));
-        });
+            if (deletedCount === 0) next(new NotFoundError('Карточка не найдена'));
+            else return res.status(200).send({ message: 'Карточка успешно удалена' });
+          })
+          .catch((err) => {
+            if (err.name === 'CastError') next(new DataError(`Неверные входные данные: : ${err.message}`));
+            else next(new UnknownError(`Неизвестная ошибка: : ${err.message}`));
+          });
+      }
     })
     .catch((err) => {
       if (err.name === 'CastError') next(new DataError(`Неверные входные данные: ${err.message}`));
@@ -54,8 +54,7 @@ function setLike(req, res, next) {
   )
     .then((card) => {
       if (!card) next(new NotFoundError('Карточка не найдена'));
-
-      return res.send(card);
+      else return res.status(200).send(card);
     })
     .catch((err) => {
       if (err.name === 'ReferenceError') next(new NotFoundError(`Карточка не найдена: ${err.message}`));
@@ -73,8 +72,7 @@ function deleteLike(req, res, next) {
   )
     .then((card) => {
       if (!card) next(new NotFoundError('Карточка не найдена'));
-
-      return res.send({ message: 'Лайк удалён' });
+      else return res.status(200).send({ message: 'Лайк удалён' });
     })
     .catch((err) => {
       if (err.name === 'CastError') next(new DataError(`Неверные входные данные: : ${err.message}`));
