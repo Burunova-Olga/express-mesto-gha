@@ -1,4 +1,3 @@
-const path = require('path');
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
@@ -49,7 +48,7 @@ app.use((req, res, next) => {
 
 app.use(errors());
 
-app.use((err, req, res, next) => {
+app.use((err, req, res) => {
   const { statusCode = 500, message } = err;
 
   res
