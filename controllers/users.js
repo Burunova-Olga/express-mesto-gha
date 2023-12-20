@@ -9,23 +9,36 @@ const UnknownError = require('../errors/unknown-error');
 const DuplicateError = require('../errors/duplicate-error');
 const NoAccessError = require('../errors/no-access-error');
 
-function login(req, res, next) {
-  const { email, password } = req.body;
-
+function findUserByCredentials(email, password) {
   return userModel.findOne({ email }).select('+password')
     .then((user) => {
-      if (!user) next(new NoAccessError('Неправильные почта или пароль'));
-
-      const token = jwt.sign({ _id: user._id }, 'super-strong-secret', { expiresIn: '7d' });
+      if (!user) return Promise.reject(new NoAccessError('Неправильные почта или пароль'));
 
       return bcrypt.compare(password, user.password)
         .then((matched) => {
-          if (!matched) next(new NoAccessError('Неправильные почта или пароль'));
+          if (!matched) Promise.reject(new NoAccessError('Неправильные почта или пароль'));
 
-          res.status(200)
-            .send({ token });
+          return user;
         });
     });
+}
+
+function login(req, res, next) {
+  const { email, password } = req.body;
+
+  return findUserByCredentials(email, password)
+    .then((user) => {
+      res
+      .status(200)
+      .send({
+        token: jwt.sign(
+          { _id: user._id },
+          'super-strong-secret',
+          { expiresIn: '7d' },
+        ),
+      });
+    })
+    .catch((err) => next(new NoAccessError(`Ошибка доступа: ${err.message}`)));
 }
 
 function createUser(req, res, next) {
@@ -47,7 +60,7 @@ function createUser(req, res, next) {
     .catch((err) => {
       if (err.code === 11000) next(new DuplicateError(`Данный email уже зарегестрирован: ${err.message}`));
 
-      if (err.name === 'ValidationError') next(new DataError(`Неверные входные данные: : ${err.message}`));
+      if (err.name === 'ValidationError') next(new DataError(`Неверные входные данные: ${err.message}`));
 
       next(new UnknownError(`Неизвестная ошибка: : ${err.message}`));
     });
@@ -56,7 +69,7 @@ function createUser(req, res, next) {
 function readAllUsers(req, res, next) {
   return userModel.find()
     .then((users) => res.status(200).send(users))
-    .catch((err) => next(new UnknownError(`Неизвестная ошибка: : ${err.message}`)));
+    .catch((err) => next(new UnknownError(`Неизвестная ошибка: ${err.message}`)));
 }
 
 function readUser(req, res, next) {
@@ -67,11 +80,11 @@ function readUser(req, res, next) {
       return res.status(200).send({ message: user });
     })
     .catch((err) => {
-      if (err.name === 'CastError') next(new DataError(`Неверные входные данные: : ${err.message}`));
+      if (err.name === 'CastError') next(new DataError(`Неверные входные данные: ${err.message}`));
 
       if (err.name === 'ReferenceError') next(new NotFoundError(`Пользователь не найден: ${err.message}`));
 
-      next(new UnknownError(`Неизвестная ошибка: : ${err.message}`));
+      next(new UnknownError(`Неизвестная ошибка: ${err.message}`));
     });
 }
 
@@ -89,9 +102,9 @@ function updateUser(req, res, next) {
       return res.status(200).send(user);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') next(new DataError(`Неверные входные данные: : ${err.message}`));
+      if (err.name === 'ValidationError') next(new DataError(`Неверные входные данные: ${err.message}`));
 
-      next(new UnknownError(`Неизвестная ошибка: : ${err.message}`));
+      next(new UnknownError(`Неизвестная ошибка: ${err.message}`));
     });
 }
 
@@ -105,9 +118,9 @@ function updateAvatar(req, res, next) {
       return res.status(200).send(user);
     })
     .catch((err) => {
-      if (err.name === 'CastError') next(new DataError(`Неверные входные данные: : ${err.message}`));
+      if (err.name === 'CastError') next(new DataError(`Неверные входные данные: ${err.message}`));
 
-      next(new UnknownError(`Неизвестная ошибка: : ${err.message}`));
+      next(new UnknownError(`Неизвестная ошибка: ${err.message}`));
     });
 }
 
