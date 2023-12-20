@@ -6,6 +6,7 @@ const helmet = require('helmet');
 const { errors, celebrate, Joi } = require('celebrate');
 const auth = require('./middlewares/auth');
 const { createUser, login } = require('./controllers/users');
+const NotFoundError = require('./errors/not-found-error');
 
 const { PORT = 3000, DB_URL = 'mongodb://127.0.0.1:27017/mestod' } = process.env;
 const app = express();
@@ -42,6 +43,10 @@ app.use(auth);
 
 app.use('/users', require('./routes/users'));
 app.use('/cards', require('./routes/cards'));
+
+app.use((req, res, next) => {
+  next(new NotFoundError('Неверный путь'));
+});
 
 app.use(errors());
 

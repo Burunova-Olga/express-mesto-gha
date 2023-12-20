@@ -2,6 +2,7 @@ const cardModel = require('../models/card');
 const NotFoundError = require('../errors/not-found-error');
 const DataError = require('../errors/data-error');
 const UnknownError = require('../errors/unknown-error');
+const MasterError = require('../errors/master-error');
 
 function createCard(req, res, next) {
   const { name, link } = req.body;
@@ -21,16 +22,27 @@ function readAllCards(req, res, next) {
 }
 
 function deleteCard(req, res, next) {
-  return cardModel.deleteOne({ _id: req.params.cardId })
-    .then((result) => {
-      const { deletedCount } = result;
+  return cardModel.findById(req.params.cardId)
+    .then((card) => {
+      if (!card) next(new NotFoundError('Карточка не найдена'));
+      else if (card.owner !== req.user._id) next(new MasterError('Эту карточку добавил другой пользователь'));
+      else {
+        return cardModel.deleteOne({ _id: req.params.cardId })
+          .then((result) => {
+            const { deletedCount } = result;
 
-      if (deletedCount === 0) next(new NotFoundError('Карточка не найдена'));
-      else return res.status(200).send({ message: 'Карточка успешно удалена' });
+            if (deletedCount === 0) next(new NotFoundError('Карточка не найдена'));
+            else return res.status(200).send({ message: 'Карточка успешно удалена' });
+          })
+          .catch((err) => {
+            if (err.name === 'CastError') next(new DataError(`Неверные входные данные: : ${err.message}`));
+            else next(new UnknownError(`Неизвестная ошибка: : ${err.message}`));
+          });
+      }
     })
     .catch((err) => {
-      if (err.name === 'CastError') next(new DataError(`Неверные входные данные: : ${err.message}`));
-      else next(new UnknownError(`Неизвестная ошибка: : ${err.message}`));
+      if (err.name === 'CastError') next(new DataError(`Неверные входные данные: ${err.message}`));
+      else next(new UnknownError(`Неизвестная ошибка: ${err.message}`));
     });
 }
 
