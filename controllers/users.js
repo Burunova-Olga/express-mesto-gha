@@ -70,7 +70,7 @@ function readUser(req, res, next) {
   return userModel.findById(req.params.userId)
     .then((user) => {
       if (!user) next(new NotFoundError('Пользователь не найден'));
-      else return res.send({ message: user });
+      return res.send({ message: user });
     })
     .catch((err) => {
       if (err.name === 'CastError') next(new DataError(`Неверные входные данные: ${err.message}`));
@@ -90,7 +90,7 @@ function updateUser(req, res, next) {
   )
     .then((user) => {
       if (!user) next(new NotFoundError('Пользователь не найден'));
-      else return res.send(user);
+      return res.send(user);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') next(new DataError(`Неверные входные данные: ${err.message}`));
@@ -104,7 +104,7 @@ function updateAvatar(req, res, next) {
   return userModel.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
     .then((user) => {
       if (!user) next(new NotFoundError('Пользователь не найден'));
-      else return res.send(user);
+      return res.send(user);
     })
     .catch((err) => {
       if (err.name === 'CastError') next(new DataError(`Неверные входные данные: ${err.message}`));
