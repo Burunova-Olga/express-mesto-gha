@@ -48,10 +48,11 @@ app.use((req, res, next) => {
 
 app.use(errors());
 
-app.use((err, req, res) => {
+app.use((err, req, res, next) => {
   const { statusCode = 500, message } = err;
+  if (res.headersSent) return next(err);
 
-  res
+  return res
     .status(statusCode)
     .send({
     // проверяем статус и выставляем сообщение в зависимости от него
