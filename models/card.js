@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const validator = require('validator');
 
 const cardSchema = new mongoose.Schema({
   name:
@@ -12,6 +13,7 @@ const cardSchema = new mongoose.Schema({
   {
     type: String,
     required: [true, 'Поле должно быть заполнено'],
+    validate: [validator.isURL, 'Строка не ссылка'],
   },
   owner:
   {

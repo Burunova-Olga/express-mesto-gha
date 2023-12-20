@@ -3,9 +3,5 @@
   "rules":
   {
     "no-underscore-dangle": ["error", { "allow": ["_id"] }],
-    "camelcase": "off",
-    "consistent-return": "off",
-    "eqeqeq": "off",
-    "no-unused-vars": "off"
   }
 }
