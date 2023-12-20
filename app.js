@@ -1,4 +1,3 @@
-/* eslint-disable */
 const path = require('path');
 const express = require('express');
 const mongoose = require('mongoose');
@@ -7,7 +6,6 @@ const helmet = require('helmet');
 const { errors, celebrate, Joi } = require('celebrate');
 const auth = require('./middlewares/auth');
 const { createUser, login } = require('./controllers/users');
-const NotFoundError = require('./errors/not-found-error');
 
 const { PORT = 3000, DB_URL = 'mongodb://127.0.0.1:27017/mestod' } = process.env;
 const app = express();
@@ -35,7 +33,7 @@ app.post('/signup', celebrate({
 
 app.post('/signin', celebrate({
   body: Joi.object().keys({
-    email: Joi.string().required().email(),
+    email: Joi.string().email().required(),
     password: Joi.string().required().min(8),
   }).unknown(true),
 }), login);
@@ -51,14 +49,14 @@ app.use((err, req, res, next) => {
   const { statusCode = 500, message } = err;
 
   res
-  .status(statusCode)
-  .send({
+    .status(statusCode)
+    .send({
     // проверяем статус и выставляем сообщение в зависимости от него
-    message: statusCode === 500
-      ? 'На сервере произошла ошибка'
-      : message
-  })
-  .end();
+      message: statusCode === 500
+        ? 'На сервере произошла ошибка'
+        : message,
+    })
+    .end();
 });
 
 app.listen(PORT, () => {
