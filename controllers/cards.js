@@ -5,7 +5,7 @@ const UnknownError = require('../errors/unknown-error');
 
 function createCard(req, res, next) {
   const { name, link } = req.body;
-  const owner = req.user.id;
+  const owner = req.user._id;
   return cardModel.create({ name, link, owner })
     .then((card) => res.status(201).send(card))
     .catch((err) => {
@@ -40,7 +40,7 @@ function deleteCard(req, res, next) {
 function setLike(req, res, next) {
   return cardModel.findByIdAndUpdate(
     req.params.cardId,
-    { $addToSet: { likes: req.user.id } },
+    { $addToSet: { likes: req.user._id } },
     { new: true },
   )
     .then((card) => {
@@ -60,7 +60,7 @@ function setLike(req, res, next) {
 function deleteLike(req, res, next) {
   return cardModel.findByIdAndUpdate(
     req.params.cardId,
-    { $pull: { likes: req.user.id } },
+    { $pull: { likes: req.user._id } },
     { new: true },
   )
     .then((card) => {
